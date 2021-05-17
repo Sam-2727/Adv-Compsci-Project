@@ -2,7 +2,8 @@
 //radius
 #define r
 
-//user-defined per
+//user-defined perameter that affects the strength of vort. confinement
+#define EPSILON 1
 
 
 Vec2 advect(sampler2D prevField, vec2 uv, vec4 curMouse, vec4 prevMouse){
@@ -79,6 +80,21 @@ double** vorticity_everywhere(sampler2D velocityField, vec2 stepSize) {
 }
 
 
-vec2 vorticityConfinement (sampler2D velocityField, vec2 vorticity, vec2 spacing, vec2 pos){
+//Takes int params for position to reference vortField array
+//xpos = pos.x / stepSize.x, etc.
+
+//For now, undefined behavior if run on an edge
+vec2 vorticityConfinement (double** vortField, vec2 stepSize, int xpos, int ypos){
   //returns vec2 corrective force from "vorticity confinement"
+
+  vec2 eta;
+
+  eta.x = (abs(vortField[xpos+1][ypos]) - abs(vortField[xpos-1][ypos])) / 2;
+  eta.y = (abs(vortField[xpos][ypos+1]) - abs(vortField[xpos][ypos-1])) / 2;
+
+  vec2 psi = vec2(eta.x / (eta.x^2 + eta.y^2), eta.y / (eta.x^2 + eta.y^2));
+
+  return vec2(EPSILON * stepSize.x * psi.y * vortField[xpos][ypos], EPSILON * stepSize.y * -1.0 * psi.x * vortField[xpos][ypos]);
+
+
 }
