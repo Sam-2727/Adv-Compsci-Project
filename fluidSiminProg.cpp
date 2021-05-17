@@ -56,6 +56,29 @@ double vorticity (sampler2D velocityField, vec2 pos, vec2 stepSize) {
   return dFy_dx - dFx_dy;
 }
 
+//Calculates vorticity everywhere and puts it into a 2d array (not really?)
+//Trying to use arrays with samplers with fail horribly. We need to revamp
+//our architecture or scrap this and use an array for velocities too.
+
+//ALSO BE CAREFUL OF MEMORY LEAK
+double** vorticity_everywhere(sampler2D velocityField, vec2 stepSize) {
+  int xsize = floor(1 / stepSize.x);
+  int ysize = floor(1 / stepSize.y);
+
+  double** vortField = new double*[xsize];
+
+  for (int i = 0; i < xsize; i++) {
+    vortField[i] = new double[ysize];
+
+    for (int j = 0; j < ysize; j++) {
+      vortField[i][j] = vorticity(velocityField, vec2(i * stepSize.x, j * stepSize.y), stepSize);
+    }
+  }
+
+  return vortField;
+}
+
+
 vec2 vorticityConfinement (sampler2D velocityField, vec2 vorticity, vec2 spacing, vec2 pos){
   //returns vec2 corrective force from "vorticity confinement"
 }
